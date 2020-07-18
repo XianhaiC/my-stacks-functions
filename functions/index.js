@@ -3,16 +3,47 @@ const firebase = require('firebase');
 const app = require('express')();
 
 const { db } = require('./util/admin');
+const auth = require('./util/auth');
 
-const FBAuth = require('./util/fbAuth');
+const {
+  userGet,
+  userUpdate,
+  userSignup,
+  userLogin,
+} = require('./handlers/users');
 
+const {
+  stackBlocksGet,
+  stackBlocksDelete,
+  stackCreate,
+  stackUpdate,
+  stackDelete,
+} = require('./handlers/stacks');
 
-// ----- scream routes
-//app.get('/screams', getAllScreams);
+const {
+  blockCreate,
+  blockUpdate,
+  blockDelete,
+} = require('./handlers/blocks');
 
+// ----- user routes
+app.get('/users/:userId', auth, userGet);
+app.patch('/users/:userId', auth, userUpdate);
+app.post('/signup', userSignup);
+app.post('/login', userLogin);
 
-// ----- users routes
-//app.post('/signup', signup);
-app.get('/', (req, res) => res.status(200).json({ response: "Hello, world!" }));
+// ----- stack routes
+app.get('/stacks/:stackId/blocks', auth, stackBlocksGet);
+app.delete('/stacks/:stackId/blocks', auth, stackBlocksDelete);
+app.post('/stacks', auth, stackCreate);
+app.patch('/stacks/:stackId', auth, stackUpdate);
+app.delete('/stacks/:stackId', auth, stackDelete);
+
+// ----- block routes
+app.post('/blocks', auth, blockCreate);
+app.patch('/blocks/:blockId', auth, blockUpdate);
+app.delete('/blocks/:blockId', auth, blockDelete);
+
+app.get('/', auth, (req, res) => res.status(200).json({ response: "Your token is ${req.user}" }));
 
 exports.api = functions.https.onRequest(app);
