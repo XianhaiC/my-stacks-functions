@@ -6,6 +6,11 @@ const {
   isNull,
 } = require('../util/validators');
 
+const {
+  DEFAULT_IS_INBOX,
+  DEFAULT_GRACE,
+} = require('../util/constants');
+
 exports.stackBlocksGet = (req, res) => {
   res.json("ok");
 }
@@ -18,9 +23,11 @@ exports.stackCreate = (req, res) => {
   const newStack = {
     name: req.body.name,
     isRoutine: req.body.isRoutine,
+    isInbox: DEFAULT_IS_INBOX,
     backgroundColor: req.body.backgroundColor,
-    userId: req.user.uid,
+    durationGrace: req.body.durationGrace,
     order: [],
+    userId: req.user.uid,
     createdAt: new Date().toISOString(),
   };
 
@@ -50,17 +57,21 @@ exports.stackCreate = (req, res) => {
 }
 
 exports.stackUpdate = (req, res) => {
-  const stackUpdate = {};
+  const update = {};
   if ("name" in req.body)
-    stackUpdate.name = req.body.name;
+    update.name = req.body.name;
   if ("isRoutine" in req.body)
-    stackUpdate.isRoutine = req.body.isRoutine;
+    update.isRoutine = req.body.isRoutine;
+  if ("isInbox" in req.body)
+    update.isInbox = req.body.isInbox;
   if ("backgroundColor" in req.body)
-    stackUpdate.backgroundColor = req.body.backgroundColor;
+    update.backgroundColor = req.body.backgroundColor;
   if ("order" in req.body)
-    stackUpdate.order = req.body.order;
+    update.order = req.body.order;
+  if ("durationGrace" in req.body)
+    update.durationGrace = req.body.durationGrace;
 
-  const { errors, valid } = validateStackUpdate(stackUpdate);
+  const { errors, valid } = validateStackUpdate(update);
   if (!valid) {
     console.error("[ERROR] Invalid body params");
 
@@ -73,7 +84,7 @@ exports.stackUpdate = (req, res) => {
   stackDocument.get()
     .then(doc => {
       if (doc.exists) {
-        stackData =  doc.data();
+        stackData = doc.data();
 
         // verify that the user owns the document
         if (stackData.userId !== req.user.uid) {
@@ -84,9 +95,9 @@ exports.stackUpdate = (req, res) => {
             .json({ error: 'Unauthorized access to document' });
         }
 
-        stackData = {...stackData, ...stackUpdate};
+        stackData = {...stackData, ...update};
 
-        return stackDocument.update(stackUpdate)
+        return stackDocument.update(update)
           .then(() => {
             return res.status(200).json(stackData);
           })
@@ -107,6 +118,7 @@ exports.stackUpdate = (req, res) => {
 
 exports.stackDelete = (req, res) => {
   const stackDocument = db.doc(`/stacks/${req.params.stackId}`);
+  var stackData;
 
   stackDocument.get()
     .then(doc => {

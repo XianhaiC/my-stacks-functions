@@ -25,17 +25,14 @@ const isEmail = (email) => {
 exports.validateUserSignup = (data) => {
   let errors = {};
 
-  // email
   if (isBlank(data.email))
     errors.email = 'Must not be empty';
   else if (!isEmail(data.email))
     errors.email = 'Must be a valid email address';
 
-  // password
   if (isBlank(data.password))
     errors.password = 'Must not be empty';
 
-  // confirm password
   if (data.password !== data.confirmPassword)
     errors.confirmPassword = 'Passwords must match';
 
@@ -48,10 +45,8 @@ exports.validateUserSignup = (data) => {
 exports.validateUserLogin = (data) => {
   let errors = {};
 
-  // email
   if (isBlank(data.email)) errors.email = 'Must not be empty';
 
-  // password
   if (isBlank(data.password)) errors.password = 'Must not be empty';
 
   return {
@@ -63,14 +58,15 @@ exports.validateUserLogin = (data) => {
 exports.validateStackCreate = (data) => {
   let errors = {};
 
-  // name
   if (isBlank(data.name)) errors.name = 'Must not be empty';
 
-  // is_routine
-  if (isNull(data.isRoutine)) errors.isRoutine = 'Must not be empty';
+  if (isNull(data.isRoutine)) errors.isRoutine = 'Must exist';
+
+  if (isNull(data.isInbox)) errors.isInbox = 'Must exist';
  
-  // background_color
-  if (isNull(data.backgroundColor)) errors.backgroundColor = 'Must not be empty';
+  if (isNull(data.backgroundColor)) errors.backgroundColor = 'Must exist';
+
+  if (isNull(data.durationGrace)) errors.durationGrace = 'Must exist';
 
   return {
     errors,
@@ -83,17 +79,61 @@ exports.validateStackUpdate = (data) => {
 
   if (Object.keys(data).length === 0) errors.general = 'Must update at least one field';
 
-  // name
   if ("name" in data && isBlank(data.name)) errors.name = 'Must not be empty';
 
-  // is_routine
-  if ("isRoutine" in data && isNull(data.isRoutine)) errors.isRoutine = 'Must not be empty';
- 
-  // background_color
-  if ("backgroundColor" in data && isNull(data.backgroundColor)) errors.backgroundColor = 'Must not be empty';
+  if ("isRoutine" in data && isNull(data.isRoutine)) errors.isRoutine = 'Must exist';
 
-  // order
-  if ("order" in data && isNull(data.order)) errors.order = 'Must not be empty';
+  if ("isInbox" in data && isNull(data.isInbox)) errors.isInbox = 'Must exist';
+ 
+  if ("backgroundColor" in data && isNull(data.backgroundColor)) errors.backgroundColor = 'Must exist';
+
+  if ("order" in data && isNull(data.order)) errors.order = 'Must exist';
+
+  if ("durationGrace" in data && isNull(data.durationGrace)) errors.durationGrace = 'Must exist';
+
+  return {
+    errors,
+    valid: Object.keys(errors).length === 0
+  }
+}
+
+exports.validateBlockCreate = (data) => {
+  let errors = {};
+
+  if (isBlank(data.task)) errors.task = 'Must not be empty';
+
+  if (isNull(data.description)) errors.description = 'Must exist';
+
+  if (isNull(data.durationWork)) errors.durationWork = 'Must exist';
+
+  if (isNull(data.durationBreak)) errors.durationBreak = 'Must exist';
+ 
+  if (isNull(data.numBursts)) errors.numBursts = 'Must exist';
+
+  if (isNull(data.stackId)) errors.stackId = 'Must exist';
+
+  return {
+    errors,
+    valid: Object.keys(errors).length === 0
+  }
+}
+
+exports.validateBlockUpdate = (data) => {
+  let errors = {};
+
+  if (Object.keys(data).length === 0) errors.general = 'Must update at least one field';
+
+  if ("task" in data && isBlank(data.task)) errors.task = 'Must not be empty';
+
+  if ("description" in data && isNull(data.description)) errors.description = 'Must exist';
+
+  if ("durationWork" in data && isNull(data.durationWork)) errors.durationWork = 'Must exist';
+ 
+  if ("durationBreak" in data && isNull(data.durationBreak)) errors.durationBreak = 'Must exist';
+
+  if ("numBursts" in data && isNull(data.numBursts)) errors.numBursts = 'Must exist';
+
+  if ("durationGrace" in data && isNull(data.durationGrace)) errors.durationGrace = 'Must exist';
 
   return {
     errors,
