@@ -16,7 +16,9 @@ exports.isNull = isNull;
 
 const isEmail = (email) => {
   const emailRegEx =
+    /*eslint-disable*/
     /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    /*eslint-enable*/
 
   if (email.match(emailRegEx)) return true;
   else return false;
@@ -155,4 +157,27 @@ exports.reduceUserDetails = (data) => {
   if (!isBlank(data.location.trim())) userDetails.location = data.location;
 
   return userDetails;
+}
+
+exports.validateDocumentAccess = (doc, uid) => {
+  var error = null;
+  // verify that the document exists
+  if (!doc.exists) {
+    error = {
+      message: 'Document not found',
+      status: 404,
+    }
+    return { error, valid: false };
+  }
+
+  // verify that the user owns the document
+  if (doc.data().userId !== uid) {
+    error = {
+      message: 'Unauthorized access to document',
+      status: 403,
+    }
+    return { error, valid: false };
+  }
+
+  return { error, valid: true };
 }

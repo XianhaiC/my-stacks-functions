@@ -1,0 +1,54 @@
+#!/bin/sh
+
+TOKEN=replace
+STACK=replace
+BLOCK=replace
+
+# signup
+#curl -X POST -H "Content-Type:application/json" -d '{"email":"cam@gmail.com","password":"helloworld","confirmPassword": "helloworld"}' http://localhost:5000/my-stacks/us-central1/api/signup
+
+# login
+#curl -X POST -H "Content-Type:application/json" -d '{"email":"cam@gmail.com","password":"helloworld"}' http://localhost:5000/my-stacks/us-central1/api/login
+
+# test auth
+#curl -H "Authorization:Bearer $TOKEN" http://localhost:5000/my-stacks/us-central1/api/
+
+
+
+# create stack
+# curl -X POST -H "Content-Type:application/json" -H "Authorization:Bearer $TOKEN" \
+ # -d '{"name":"Workout", "isRoutine": false, "backgroundColor": "red", "durationGrace": 900}' http://localhost:5000/my-stacks/us-central1/api/stacks
+
+# update stack
+# curl -X PATCH -H "Content-Type:application/json" -H "Authorization:Bearer $TOKEN" \
+  # -d '{"name":"Workout 2", "backgroundColor": "red", "order": []}' http://localhost:5000/my-stacks/us-central1/api/stacks/$STACK
+
+# delete stack
+# curl -X DELETE -H "Authorization:Bearer $TOKEN" \
+  # http://localhost:5000/my-stacks/us-central1/api/stacks/6YZQHkwYf4c3IUAxsFPB
+
+# create block
+# curl -X POST -H "Content-Type:application/json" -H "Authorization:Bearer $TOKEN" \
+  # -d '{"task":"block work 2", "description": "", "durationWork": 9000, "durationBreak": 500, "numBursts": 3, "stackId": "'"$STACK"'"}' http://localhost:5000/my-stacks/us-central1/api/blocks
+
+# delete stack
+# curl -X DELETE -H "Authorization:Bearer $TOKEN" \
+  # http://localhost:5000/my-stacks/us-central1/api/stacks/$STACK
+
+
+
+# update block
+# curl -X PATCH -H "Content-Type:application/json" -H "Authorization:Bearer $TOKEN" \
+  # -d '{"numBursts": 34,"durationBreak": 324, "description":"kill all"}' http://localhost:5000/my-stacks/us-central1/api/blocks/$BLOCK
+
+# delete block
+# curl -X DELETE -H "Authorization:Bearer $TOKEN" \
+  # http://localhost:5000/my-stacks/us-central1/api/blocks/$BLOCK
+
+# get stack blocks
+# curl -H "Authorization:Bearer $TOKEN" \
+  # http://localhost:5000/my-stacks/us-central1/api/stacks/$STACK/blocks
+
+# clear stack blocks
+# curl -X DELETE -H "Authorization:Bearer $TOKEN" \
+  # http://localhost:5000/my-stacks/us-central1/api/stacks/$STACK/blocks

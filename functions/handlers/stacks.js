@@ -3,6 +3,7 @@ const { admin, db } = require('../util/admin');
 const {
   validateStackCreate,
   validateStackUpdate,
+  validateDocumentAccess,
   isNull,
 } = require('../util/validators');
 
@@ -11,12 +12,66 @@ const {
   DEFAULT_GRACE,
 } = require('../util/constants');
 
-exports.stackBlocksGet = (req, res) => {
-  res.json("ok");
+exports.stackBlocksGet = async (req, res) => {
+  const stackRequest = db.doc(`/stacks/${req.params.stackId}`);
+  var blocksData = { blocks: {} };
+
+  try {
+    const stackDoc = await stackRequest.get();
+
+    // validate access
+    const { error, valid } = validateDocumentAccess(stackDoc, req.user.uid);
+    if (!valid) {
+      console.error("[ERROR]", error.message);
+      return res.status(error.status).json(error.message);
+    }
+
+    // retrieve all blocks under the stack
+    const blocksSnapshot = await db.collection('blocks')
+      .where('stackId', '==', req.params.stackId)
+      .get();
+
+    blocksSnapshot.forEach((blockDoc) => {
+      const blockData = blockDoc.data();
+      blockData.id = blockDoc.id;
+      blocksData.blocks[blockDoc.id] = blockData;
+    });
+
+    return res.status(200).json(blocksData);
+  }
+  catch (err) {
+    console.error("[ERROR]", err);
+    return res.status(500).json({ error: err.code });
+  }
+
 }
 
-exports.stackBlocksDelete = (req, res) => {
-  res.json("ok");
+exports.stackBlocksDelete = async (req, res) => {
+  const stackRequest = db.doc(`/stacks/${req.params.stackId}`);
+  var blocksData = { blocks: {} };
+
+  try {
+    const stackDoc = await stackRequest.get();
+
+    // validate access
+    const { error, valid } = validateDocumentAccess(stackDoc, req.user.uid);
+    if (!valid) {
+      console.error("[ERROR]", error.message);
+      return res.status(error.status).json(error.message);
+    }
+
+    // delete all blocks in a batch and clear the stack's order array
+    const batchDelete = deleteBlocks(stackDoc);
+    console.log("DEL", batchDelete);
+    batchDelete.update(stackRequest, { order: [] });
+    await batchDelete.commit();
+
+    return res.status(200).json({ result: 'Deleted blocks' });
+  }
+  catch (err) {
+    console.error("[ERROR]", err);
+    return res.status(500).json({ error: err.code });
+  }
 }
 
 exports.stackCreate = (req, res) => {
@@ -39,24 +94,20 @@ exports.stackCreate = (req, res) => {
     return res.status(400).json(errors);
   }
 
-  db
-    .collection('stacks')
-    .add(newStack)
-
+  db.collection('stacks').add(newStack)
     .then((data) => {
       const resStack = newStack;
-      resStack.stackId = data.id;
-      res.json(resStack);
+      resStack.id = data.id;
+      return res.json(resStack);
     })
 
     .catch(err => {
       console.error("[ERROR]", err);
-
-      res.status(500).json({ error: 'Something went wrong' });
+      return res.status(500).json({ error: 'Something went wrong' });
     });
 }
 
-exports.stackUpdate = (req, res) => {
+exports.stackUpdate = async (req, res) => {
   const update = {};
   if ("name" in req.body)
     update.name = req.body.name;
@@ -74,81 +125,70 @@ exports.stackUpdate = (req, res) => {
   const { errors, valid } = validateStackUpdate(update);
   if (!valid) {
     console.error("[ERROR] Invalid body params");
-
     return res.status(400).json(errors);
   }
 
-  const stackDocument = db.doc(`/stacks/${req.params.stackId}`);
+  const stackRequest = db.doc(`/stacks/${req.params.stackId}`);
   var stackData;
 
-  stackDocument.get()
-    .then(doc => {
-      if (doc.exists) {
-        stackData = doc.data();
+  try {
+    const stackDoc = await stackRequest.get();
 
-        // verify that the user owns the document
-        if (stackData.userId !== req.user.uid) {
-          console.error('[ERROR] Unauthorized request');
+    // validate access
+    const { error, valid } = validateDocumentAccess(stackDoc, req.user.uid);
+    if (!valid) {
+      console.error("[ERROR]", error.message);
+      return res.status(error.status).json(error.message);
+    }
 
-          return res
-            .status(403)
-            .json({ error: 'Unauthorized access to document' });
-        }
+    stackData = { id: stackDoc.id, ...stackDoc.data(), ...update};
 
-        stackData = {...stackData, ...update};
+    await stackRequest.update(update)
 
-        return stackDocument.update(update)
-          .then(() => {
-            return res.status(200).json(stackData);
-          })
-      }
-      else {
-        console.error("[ERROR] Stack not found");
-
-        return res.status(404).json({ error: 'Stack not found' });
-      }
-    })
-
-    .catch(err => {
-      console.error("[ERROR]", err);
-
-      res.status(500).json({ error: err.code });
-    })
+    return res.status(200).json(stackData);
+  }
+  catch (err) {
+    console.error("[ERROR]", err);
+    return res.status(500).json({ error: err.code });
+  }
 }
 
-exports.stackDelete = (req, res) => {
-  const stackDocument = db.doc(`/stacks/${req.params.stackId}`);
-  var stackData;
+exports.stackDelete = async (req, res) => {
+  const stackRequest = db.doc(`/stacks/${req.params.stackId}`);
 
-  stackDocument.get()
-    .then(doc => {
-      if (doc.exists) {
-        stackData =  doc.data();
+  try {
+    const stackDoc = await stackRequest.get();
 
-        // verify that the user owns the document
-        if (stackData.userId !== req.user.uid) {
-          console.error('[ERROR] Unauthorized request');
+    // validate access
+    const { error, valid } = validateDocumentAccess(stackDoc, req.user.uid);
+    if (!valid) {
+      console.error("[ERROR]", error.message);
+      return res.status(error.status).json(error.message);
+    }
 
-          return res
-            .status(403)
-            .json({ error: 'Unauthorized access to document' });
-        }
+    // delete stack and its blocks
+    const batchDelete = deleteBlocks(stackDoc);
+    batchDelete.delete(stackRequest);
+    await batchDelete.commit();
 
-        return stackDocument.delete()
-          .then(() => {
-            return res.status(200).json({ result: 'Deleted document' });
-          })
-      }
-      else {
-        console.error("[ERROR] Stack not found");
+    return res.status(200).json({ result: 'Deleted document' });
+  }
+  catch (err) {
+    console.error("[ERROR]", err);
+    return res.status(500).json({ error: err.code });
+  }
+}
 
-        return res.status(404).json({ error: 'Stack not found' });
-      }
-    })
+const deleteBlocks = (stackDoc) => {
+  const batchDelete = db.batch();
 
-    .catch(err => {
-      console.error("[ERROR]", err);
+  // delete each block
+  stackDoc.data().order.forEach((blockId) => {
+    batchDelete.delete(db.doc(`/blocks/${blockId}`));
+  });
+  console.log("IN DEL", batchDelete);
 
-      res.status(500).json({ error: err.code });
-    })
+  // return instead of committing since the caller may need
+  // to append more writes
+  return batchDelete;
 }

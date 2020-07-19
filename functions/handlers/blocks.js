@@ -3,9 +3,10 @@ const { admin, db } = require('../util/admin');
 const {
   validateBlockCreate,
   validateBlockUpdate,
+  validateDocumentAccess,
 } = require('../util/validators');
 
-exports.blockCreate = (req, res) => {
+exports.blockCreate = async (req, res) => {
   const newBlock = {
     task: req.body.task,
     description: req.body.description,
@@ -21,62 +22,43 @@ exports.blockCreate = (req, res) => {
   const { errors, valid } = validateBlockCreate(newBlock);
   if (!valid) {
     console.error("[ERROR] Invalid body params");
-
     return res.status(400).json(errors);
   }
 
-  const stackDocument = db.doc(`/stacks/${req.body.stackId}`);
-  var blockData
+  const stackRequest = db.doc(`/stacks/${req.body.stackId}`);
 
-  stackDocument.get()
-    .then(doc => {
-      if (!doc.exists) {
-        console.error("[ERROR] Stack not found");
+  try {
+    const stackDoc = await stackRequest.get();
 
-        return res.status(404).json({ error: 'Stack not found' });
-      }
+    // validate access
+    const { error, valid } = validateDocumentAccess(stackDoc, req.user.uid);
+    if (!valid) {
+      console.error("[ERROR]", error.message);
+      return res.status(error.status).json(error.message);
+    }
 
-      stackData =  doc.data();
+    stackData = stackDoc.data();
+    stackData.id = stackDoc.id;
 
-      // verify that the user owns the document
-      if (stackData.userId !== req.user.uid) {
-        console.error('[ERROR] Unauthorized request');
+    // create the new block
+    const blockRef = await db.collection('blocks').add(newBlock);
 
-        return res
-          .status(403)
-          .json({ error: 'Unauthorized access to document' });
-      }
+    newBlock.id = blockRef.id;
+    stackData.order.push(blockRef.id);
 
-      // create the new block
-      return db.collection('blocks').add(newBlock)
-        .then((data) => {
-          newBlock.blockId = data.id;
-          stackData.order.push(data.id);
+    // update the stack's order
+    await stackRequest.update({ order: stackData.order })
 
-          return stackDocument.update({ order: stackData.order })
-            .then(() => {
-              return res.status(200).json(newBlock);
-            })
-            .catch(err => {
-              console.error("[ERROR]", err);
-
-              res.status(500).json({ error: err.code });
-            })
-        })
-        .catch(err => {
-          console.error("[ERROR]", err);
-
-          res.status(500).json({ error: err.code });
-        })
-    })
-    .catch(err => {
-      console.error("[ERROR]", err);
-
-      res.status(500).json({ error: err.code });
-    })
+    // return both updated documents
+    return res.status(200).json({ block: newBlock, stack: stackData });
+  }
+  catch (err) {
+    console.error("[ERROR]", err);
+    return res.status(500).json({ error: err.code });
+  }
 }
 
-exports.blockUpdate = (req, res) => {
+exports.blockUpdate = async (req, res) => {
   const update = {};
   if ("task" in req.body)
     update.task = req.body.task;
@@ -96,77 +78,60 @@ exports.blockUpdate = (req, res) => {
     return res.status(400).json(errors);
   }
 
-  const blockDocument = db.doc(`/blocks/${req.params.blockId}`);
+  const blockRequest = db.doc(`/blocks/${req.params.blockId}`);
   var blockData;
 
-  blockDocument.get()
-    .then(doc => {
-      if (doc.exists) {
-        blockData = doc.data();
+  try {
+    const blockDoc = await blockRequest.get();
 
-        // verify that the user owns the document
-        if (blockData.userId !== req.user.uid) {
-          console.error('[ERROR] Unauthorized request');
+    // validate access
+    const { error, valid } = validateDocumentAccess(blockDoc, req.user.uid);
+    if (!valid) {
+      console.error("[ERROR]", error.message);
+      return res.status(error.status).json(error.message);
+    }
 
-          return res
-            .status(403)
-            .json({ error: 'Unauthorized access to document' });
-        }
+    blockData = { id: blockDoc.id, ...blockDoc.data(), ...update };
 
-        blockData = {...blockData, ...update};
+    // update the block
+    await blockRequest.update(update)
 
-        return blockDocument.update(update)
-          .then(() => {
-            return res.status(200).json(blockData);
-          })
-      }
-      else {
-        console.error("[ERROR] Stack not found");
-
-        return res.status(404).json({ error: 'Block not found' });
-      }
-    })
-
-    .catch(err => {
-      console.error("[ERROR]", err);
-
-      res.status(500).json({ error: err.code });
-    })
+    return res.status(200).json(blockData);
+  }
+  catch (err) {
+    console.error("[ERROR]", err);
+    return res.status(500).json({ error: err.code });
+  }
 }
 
-exports.blockDelete = (req, res) => {
-  const blockDocument = db.doc(`/blocks/${req.params.blockId}`);
-  var blockData;
+exports.blockDelete = async (req, res) => {
+  const blockRequest = db.doc(`/blocks/${req.params.blockId}`);
 
-  blockDocument.get()
-    .then(doc => {
-      if (doc.exists) {
-        blockData = doc.data();
+  try {
+    const blockDoc = await blockRequest.get();
 
-        // verify that the user owns the document
-        if (blockData.userId !== req.user.uid) {
-          console.error('[ERROR] Unauthorized request');
+    // validate access
+    const { error, valid } = validateDocumentAccess(blockDoc, req.user.uid);
+    if (!valid) {
+      console.error("[ERROR]", error.message);
+      return res.status(error.status).json(error.message);
+    }
 
-          return res
-            .status(403)
-            .json({ error: 'Unauthorized access to document' });
-        }
+    // delete the block
+    await blockRequest.delete()
 
-        return blockDocument.delete()
-          .then(() => {
-            return res.status(200).json({ result: 'Deleted document' });
-          })
-      }
-      else {
-        console.error("[ERROR] Stack not found");
+    const stackRequest = db.doc(`/stacks/${blockDoc.data().stackId}`);
+    const stackDoc = await stackRequest.get();
 
-        return res.status(404).json({ error: 'Stack not found' });
-      }
+    // update the block's stack's order by removing the block from it
+    await stackRequest.update({
+      order: stackDoc.data().order.filter(blockId => blockId !== blockDoc.id),
     })
 
-    .catch(err => {
-      console.error("[ERROR]", err);
-
-      res.status(500).json({ error: err.code });
-    })
+    return res.status(200).json({ result: 'Deleted document' });
+  }
+  catch (err) {
+    console.error("[ERROR]", err);
+    return res.status(500).json({ error: err.code });
+  }
 }
