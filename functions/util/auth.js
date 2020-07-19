@@ -7,7 +7,7 @@ module.exports = (req, res, next) => {
     token = req.headers.authorization.split('Bearer ')[1];
   }
   else {
-    console.error('[WARN] Unauthorized request');
+    console.error('[ERROR] Unauthorized request');
 
     return res.status(403).json({ error: 'Unauthorized' });
   }
@@ -21,6 +21,7 @@ module.exports = (req, res, next) => {
 
     .catch(err => {
       console.error('[ERROR] Cannot verify token', err);
+
       return res.status(403).json(err);
     })
 

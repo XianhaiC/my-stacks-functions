@@ -38,7 +38,11 @@ exports.userSignup = (req, res) => {
 
   // validate body data
   const { errors, valid } = validateUserSignup(newUser);
-  if (!valid) return res.status(400).json(errors);
+  if (!valid) {
+    console.error("[ERROR] Invalid body params");
+
+    return res.status(400).json(errors);
+  }
 
   let userToken, userId;
 
@@ -108,7 +112,11 @@ exports.userLogin = (req, res) => {
 
   // validate body data
   const { errors, valid } = validateUserLogin(user);
-  if (!valid) return res.status(400).json(errors);
+  if (!valid) {
+    console.error("[ERROR] Invalid body params");
+
+    return res.status(400).json(errors);
+  }
 
   firebase
     .auth()

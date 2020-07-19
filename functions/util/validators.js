@@ -1,10 +1,18 @@
 const isBlank = (val) => {
-  if (val === null
-    || val === undefined
-    || val.trim() === '') return true;
+  if (isNull(val) || val.trim() === '')
+    return true;
 
   return false;
 }
+
+const isNull = (val) => {
+  if (val === null
+    || val === undefined)
+    return true;
+
+  return false;
+}
+exports.isNull = isNull;
 
 const isEmail = (email) => {
   const emailRegEx =
@@ -45,6 +53,47 @@ exports.validateUserLogin = (data) => {
 
   // password
   if (isBlank(data.password)) errors.password = 'Must not be empty';
+
+  return {
+    errors,
+    valid: Object.keys(errors).length === 0
+  }
+}
+
+exports.validateStackCreate = (data) => {
+  let errors = {};
+
+  // name
+  if (isBlank(data.name)) errors.name = 'Must not be empty';
+
+  // is_routine
+  if (isNull(data.isRoutine)) errors.isRoutine = 'Must not be empty';
+ 
+  // background_color
+  if (isNull(data.backgroundColor)) errors.backgroundColor = 'Must not be empty';
+
+  return {
+    errors,
+    valid: Object.keys(errors).length === 0
+  }
+}
+
+exports.validateStackUpdate = (data) => {
+  let errors = {};
+
+  if (Object.keys(data).length === 0) errors.general = 'Must update at least one field';
+
+  // name
+  if ("name" in data && isBlank(data.name)) errors.name = 'Must not be empty';
+
+  // is_routine
+  if ("isRoutine" in data && isNull(data.isRoutine)) errors.isRoutine = 'Must not be empty';
+ 
+  // background_color
+  if ("backgroundColor" in data && isNull(data.backgroundColor)) errors.backgroundColor = 'Must not be empty';
+
+  // order
+  if ("order" in data && isNull(data.order)) errors.order = 'Must not be empty';
 
   return {
     errors,

@@ -44,6 +44,9 @@ app.post('/blocks', auth, blockCreate);
 app.patch('/blocks/:blockId', auth, blockUpdate);
 app.delete('/blocks/:blockId', auth, blockDelete);
 
-app.get('/', auth, (req, res) => res.status(200).json({ response: "Your token is ${req.user}" }));
+app.get('/', auth, (req, res) => {
+  console.log("AUTH", req.user);
+  res.status(200).json({ response: `You are authenticated as: ${req.user.email}` })
+});
 
 exports.api = functions.https.onRequest(app);
