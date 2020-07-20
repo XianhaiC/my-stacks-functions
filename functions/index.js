@@ -27,8 +27,8 @@ const {
 } = require('./handlers/blocks');
 
 // ----- user routes
-app.get('/users/:userId', auth, userGet);
-app.patch('/users/:userId', auth, userUpdate);
+app.get('/users/', auth, userGet);
+app.patch('/users/', auth, userUpdate);
 app.post('/signup', userSignup);
 app.post('/login', userLogin);
 

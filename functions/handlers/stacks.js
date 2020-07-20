@@ -43,7 +43,6 @@ exports.stackBlocksGet = async (req, res) => {
     console.error("[ERROR]", err);
     return res.status(500).json({ error: err.code });
   }
-
 }
 
 exports.stackBlocksDelete = async (req, res) => {

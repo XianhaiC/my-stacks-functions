@@ -13,6 +13,10 @@ BLOCK=replace
 # test auth
 #curl -H "Authorization:Bearer $TOKEN" http://localhost:5000/my-stacks/us-central1/api/
 
+# get user stacks
+#curl -H "Authorization:Bearer $TOKEN" \
+#  http://localhost:5000/my-stacks/us-central1/api/users
+
 
 
 # create stack

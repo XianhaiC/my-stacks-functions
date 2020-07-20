@@ -23,6 +23,42 @@ exports.userUpdate = (req, res) => {
   res.json("ok");
 }
 
+exports.userGet = async (req, res) => {
+  const userRequest = db.doc(`/users/${req.user.uid}`);
+  var stacksData = { stacks: {} };
+
+  try {
+    const userDoc = await userRequest.get();
+
+    // validate access
+    if (!userDoc.exists) {
+      console.error("[ERROR]", 'Document not found');
+      return res.status(404).json({ error: 'Document not found' });
+    }
+
+    // retrieve all stacks under the user
+    const stacksSnapshot = await db.collection('stacks')
+      .where('userId', '==', req.user.uid)
+      .get();
+
+    stacksSnapshot.forEach((stackDoc) => {
+      const stackData = stackDoc.data();
+      stackData.id = stackDoc.id;
+      stacksData.stacks[stackDoc.id] = stackData;
+    });
+
+    stacksData.user = userDoc.data();
+
+    return res.status(200).json(stacksData);
+  }
+  catch (err) {
+    console.error("[ERROR]", err);
+    return res.status(500).json({ error: err.code });
+  }
+}
+
+// TODO updateUser route
+
 /* [GET] /signup
  *
  * creates a user associated with the email if one doesn't already exist
