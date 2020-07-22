@@ -22,7 +22,7 @@ exports.stackBlocksGet = async (req, res) => {
     // validate access
     const { error, valid } = validateDocumentAccess(stackDoc, req.user.uid);
     if (!valid) {
-      console.error("[ERROR]", error.message);
+      console.error('[ERROR]', error.message);
       return res.status(error.status).json(error.message);
     }
 
@@ -40,7 +40,7 @@ exports.stackBlocksGet = async (req, res) => {
     return res.status(200).json(blocksData);
   }
   catch (err) {
-    console.error("[ERROR]", err);
+    console.error('[ERROR]', err);
     return res.status(500).json({ error: err.code });
   }
 }
@@ -55,20 +55,20 @@ exports.stackBlocksDelete = async (req, res) => {
     // validate access
     const { error, valid } = validateDocumentAccess(stackDoc, req.user.uid);
     if (!valid) {
-      console.error("[ERROR]", error.message);
+      console.error('[ERROR]', error.message);
       return res.status(error.status).json(error.message);
     }
 
     // delete all blocks in a batch and clear the stack's order array
     const batchDelete = deleteBlocks(stackDoc);
-    console.log("DEL", batchDelete);
+    console.log('DEL', batchDelete);
     batchDelete.update(stackRequest, { order: [] });
     await batchDelete.commit();
 
     return res.status(200).json({ result: 'Deleted blocks' });
   }
   catch (err) {
-    console.error("[ERROR]", err);
+    console.error('[ERROR]', err);
     return res.status(500).json({ error: err.code });
   }
 }
@@ -88,7 +88,7 @@ exports.stackCreate = (req, res) => {
   // validate body data
   const { errors, valid } = validateStackCreate(newStack);
   if (!valid) {
-    console.error("[ERROR] Invalid body params");
+    console.error('[ERROR] Invalid body params');
 
     return res.status(400).json(errors);
   }
@@ -97,33 +97,33 @@ exports.stackCreate = (req, res) => {
     .then((data) => {
       const resStack = newStack;
       resStack.id = data.id;
-      return res.json(resStack);
+      return res.status(200).json(resStack);
     })
 
     .catch(err => {
-      console.error("[ERROR]", err);
+      console.error('[ERROR]', err);
       return res.status(500).json({ error: 'Something went wrong' });
     });
 }
 
 exports.stackUpdate = async (req, res) => {
   const update = {};
-  if ("name" in req.body)
+  if ('name' in req.body)
     update.name = req.body.name;
-  if ("isRoutine" in req.body)
+  if ('isRoutine' in req.body)
     update.isRoutine = req.body.isRoutine;
-  if ("isInbox" in req.body)
+  if ('isInbox' in req.body)
     update.isInbox = req.body.isInbox;
-  if ("backgroundColor" in req.body)
+  if ('backgroundColor' in req.body)
     update.backgroundColor = req.body.backgroundColor;
-  if ("order" in req.body)
+  if ('order' in req.body)
     update.order = req.body.order;
-  if ("durationGrace" in req.body)
+  if ('durationGrace' in req.body)
     update.durationGrace = req.body.durationGrace;
 
   const { errors, valid } = validateStackUpdate(update);
   if (!valid) {
-    console.error("[ERROR] Invalid body params");
+    console.error('[ERROR] Invalid body params');
     return res.status(400).json(errors);
   }
 
@@ -136,7 +136,7 @@ exports.stackUpdate = async (req, res) => {
     // validate access
     const { error, valid } = validateDocumentAccess(stackDoc, req.user.uid);
     if (!valid) {
-      console.error("[ERROR]", error.message);
+      console.error('[ERROR]', error.message);
       return res.status(error.status).json(error.message);
     }
 
@@ -147,7 +147,7 @@ exports.stackUpdate = async (req, res) => {
     return res.status(200).json(stackData);
   }
   catch (err) {
-    console.error("[ERROR]", err);
+    console.error('[ERROR]', err);
     return res.status(500).json({ error: err.code });
   }
 }
@@ -161,7 +161,7 @@ exports.stackDelete = async (req, res) => {
     // validate access
     const { error, valid } = validateDocumentAccess(stackDoc, req.user.uid);
     if (!valid) {
-      console.error("[ERROR]", error.message);
+      console.error('[ERROR]', error.message);
       return res.status(error.status).json(error.message);
     }
 
@@ -173,7 +173,7 @@ exports.stackDelete = async (req, res) => {
     return res.status(200).json({ result: 'Deleted document' });
   }
   catch (err) {
-    console.error("[ERROR]", err);
+    console.error('[ERROR]', err);
     return res.status(500).json({ error: err.code });
   }
 }
@@ -185,7 +185,7 @@ const deleteBlocks = (stackDoc) => {
   stackDoc.data().order.forEach((blockId) => {
     batchDelete.delete(db.doc(`/blocks/${blockId}`));
   });
-  console.log("IN DEL", batchDelete);
+  console.log('IN DEL', batchDelete);
 
   // return instead of committing since the caller may need
   // to append more writes

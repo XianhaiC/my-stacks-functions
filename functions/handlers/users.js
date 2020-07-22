@@ -13,15 +13,10 @@ const {
 
 const {
   DEFAULT_THEME,
+  DEFAULT_INBOX_NAME,
+  DEFAULT_GRACE,
 } = require('../util/constants');
 
-exports.userGet = (req, res) => {
-  res.json("ok");
-}
-
-exports.userUpdate = (req, res) => {
-  res.json("ok");
-}
 
 exports.userGet = async (req, res) => {
   const userRequest = db.doc(`/users/${req.user.uid}`);
@@ -32,7 +27,7 @@ exports.userGet = async (req, res) => {
 
     // validate access
     if (!userDoc.exists) {
-      console.error("[ERROR]", 'Document not found');
+      console.error('[ERROR]', 'Document not found');
       return res.status(404).json({ error: 'Document not found' });
     }
 
@@ -52,12 +47,14 @@ exports.userGet = async (req, res) => {
     return res.status(200).json(stacksData);
   }
   catch (err) {
-    console.error("[ERROR]", err);
+    console.error('[ERROR]', err);
     return res.status(500).json({ error: err.code });
   }
 }
 
-// TODO updateUser route
+exports.userUpdate = (req, res) => {
+  res.json('ok');
+}
 
 /* [GET] /signup
  *
@@ -65,73 +62,74 @@ exports.userGet = async (req, res) => {
  *
  * returns the user's authentication token upon success
  */
-exports.userSignup = (req, res) => {
+exports.userSignup = async (req, res) => {
   const newUser = {
     email: req.body.email,
     password: req.body.password,
-    confirmPassword: req.body.confirmPassword,
+    passwordConfirm: req.body.passwordConfirm,
   }
 
   // validate body data
   const { errors, valid } = validateUserSignup(newUser);
   if (!valid) {
-    console.error("[ERROR] Invalid body params");
+    console.error('[ERROR] Invalid body params');
 
     return res.status(400).json(errors);
   }
 
   let userToken, userId;
 
-  db.doc(`/users/${newUser.email}`).get()
-    .then(doc => {
-      // check if the user already exists
-      if (doc.exists) {
-        return res.status(400).json({ handle: 'this handle is already taken' });
-      }
+  try {
+    const userDoc = await db.doc(`/users/${newUser.email}`).get();
 
-      // create the authentication entry for the user
-      console.log("[INFO] Creating new user", newUser);
+    if (userDoc.exists) {
+      console.error('[ERROR] User with email already exists')
+      return res.status(400).json({ handle: 'this handle is already taken' });
+    }
 
-      return firebase
-        .auth()
-        .createUserWithEmailAndPassword(newUser.email, newUser.password)
-    })
+    // create the authentication entry for the user
+    console.log('[INFO] Creating new user', newUser);
 
-    .then(authData => {
-      // parse the user's token
-      userId = authData.user.uid;
-      return authData.user.getIdToken()
-    })
+    const authData = await firebase.auth()
+      .createUserWithEmailAndPassword(newUser.email, newUser.password)
 
-    .then(token => {
-      userToken = token;
+    // parse the user's token
+    userId = authData.user.uid;
+    const token = await authData.user.getIdToken();
 
-      // create the user document
-      const userData = {
-        userId: userId,
-        email: newUser.email,
-        theme: DEFAULT_THEME,
-        createdAt: new Date().toISOString(),
-      }
+    userToken = token;
 
-      return db.doc(`/users/${userId}`).set(userData);
-    })
+    // create the user document
+    const userData = {
+      userId: userId,
+      email: newUser.email,
+      theme: DEFAULT_THEME,
+      createdAt: new Date().toISOString(),
+    }
 
-    .then(() => {
-      // success, return the token to the requester
-      return res.status(201).json({ userToken });
-    })
+    await db.doc(`/users/${userId}`).set(userData);
 
-    .catch(err => {
-      console.error("[ERROR]", err);
+    // create new inbox stack
+    const newInbox = {
+      name: DEFAULT_INBOX_NAME,
+      isRoutine: false,
+      isInbox: true,
+      backgroundColor: 'default',
+      durationGrace: DEFAULT_GRACE,
+      order: [],
+      userId: userId,
+      createdAt: new Date().toISOString(),
+    };
 
-      if (err.code === 'auth/email-already-in-use') {
-        return res.status(400).json({ email: 'Email is already in use' });
-      }
-      else {
-        return res.status(500).json({ general: 'Something went wrong, please try again' });
-      }
-    });
+    await db.collection('stacks').add(newInbox)
+
+    // success, return the token to the requester
+    return res.status(201).json({ token });
+  }
+  catch (err) {
+    console.error('[ERROR]', err);
+    return res.status(500).json({ error: err.code });
+  }
 }
 
 /* [GET] /login
@@ -149,7 +147,7 @@ exports.userLogin = (req, res) => {
   // validate body data
   const { errors, valid } = validateUserLogin(user);
   if (!valid) {
-    console.error("[ERROR] Invalid body params");
+    console.error('[ERROR] Invalid body params');
 
     return res.status(400).json(errors);
   }
@@ -160,7 +158,7 @@ exports.userLogin = (req, res) => {
 
     .then(data => {
       // create the authentication entry for the user
-      console.log("[INFO] Logged in user", user.email);
+      console.log('[INFO] Logged in user', user.email);
 
       return data.user.getIdToken();
     })
@@ -171,7 +169,7 @@ exports.userLogin = (req, res) => {
     })
 
     .catch((err) => {
-      console.error("[ERROR]", err);
+      console.error('[ERROR]', err);
 
       if (err.code === 'auth/wrong-password'
         || err.code === 'auth/user-not-found') {

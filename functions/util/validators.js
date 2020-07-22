@@ -35,8 +35,8 @@ exports.validateUserSignup = (data) => {
   if (isBlank(data.password))
     errors.password = 'Must not be empty';
 
-  if (data.password !== data.confirmPassword)
-    errors.confirmPassword = 'Passwords must match';
+  if (data.password !== data.passwordConfirm)
+    errors.passwordConfirm = 'Passwords must match';
 
   return {
     errors,
@@ -81,17 +81,17 @@ exports.validateStackUpdate = (data) => {
 
   if (Object.keys(data).length === 0) errors.general = 'Must update at least one field';
 
-  if ("name" in data && isBlank(data.name)) errors.name = 'Must not be empty';
+  if ('name' in data && isBlank(data.name)) errors.name = 'Must not be empty';
 
-  if ("isRoutine" in data && isNull(data.isRoutine)) errors.isRoutine = 'Must exist';
+  if ('isRoutine' in data && isNull(data.isRoutine)) errors.isRoutine = 'Must exist';
 
-  if ("isInbox" in data && isNull(data.isInbox)) errors.isInbox = 'Must exist';
+  if ('isInbox' in data && isNull(data.isInbox)) errors.isInbox = 'Must exist';
  
-  if ("backgroundColor" in data && isNull(data.backgroundColor)) errors.backgroundColor = 'Must exist';
+  if ('backgroundColor' in data && isNull(data.backgroundColor)) errors.backgroundColor = 'Must exist';
 
-  if ("order" in data && isNull(data.order)) errors.order = 'Must exist';
+  if ('order' in data && isNull(data.order)) errors.order = 'Must exist';
 
-  if ("durationGrace" in data && isNull(data.durationGrace)) errors.durationGrace = 'Must exist';
+  if ('durationGrace' in data && isNull(data.durationGrace)) errors.durationGrace = 'Must exist';
 
   return {
     errors,
@@ -125,17 +125,17 @@ exports.validateBlockUpdate = (data) => {
 
   if (Object.keys(data).length === 0) errors.general = 'Must update at least one field';
 
-  if ("task" in data && isBlank(data.task)) errors.task = 'Must not be empty';
+  if ('task' in data && isBlank(data.task)) errors.task = 'Must not be empty';
 
-  if ("description" in data && isNull(data.description)) errors.description = 'Must exist';
+  if ('description' in data && isNull(data.description)) errors.description = 'Must exist';
 
-  if ("durationWork" in data && isNull(data.durationWork)) errors.durationWork = 'Must exist';
+  if ('durationWork' in data && isNull(data.durationWork)) errors.durationWork = 'Must exist';
  
-  if ("durationBreak" in data && isNull(data.durationBreak)) errors.durationBreak = 'Must exist';
+  if ('durationBreak' in data && isNull(data.durationBreak)) errors.durationBreak = 'Must exist';
 
-  if ("numBursts" in data && isNull(data.numBursts)) errors.numBursts = 'Must exist';
+  if ('numBursts' in data && isNull(data.numBursts)) errors.numBursts = 'Must exist';
 
-  if ("durationGrace" in data && isNull(data.durationGrace)) errors.durationGrace = 'Must exist';
+  if ('durationGrace' in data && isNull(data.durationGrace)) errors.durationGrace = 'Must exist';
 
   return {
     errors,

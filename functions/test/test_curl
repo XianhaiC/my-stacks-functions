@@ -1,27 +1,29 @@
 #!/bin/sh
 
 TOKEN=replace
-STACK=replace
+STACK0=InwU7qyGFRQQmtMZtaAi
+STACK1=GokZ0UyY8BpX1dzsg3hX
+STACK2=3275uiy0cOT6JEucbGtP
 BLOCK=replace
 
 # signup
-#curl -X POST -H "Content-Type:application/json" -d '{"email":"cam@gmail.com","password":"helloworld","confirmPassword": "helloworld"}' http://localhost:5000/my-stacks/us-central1/api/signup
+#curl -X POST -H "Content-Type:application/json" -d '{"email":"test6@gmail.com","password":"helloworld","passwordConfirm": "helloworld"}' http://localhost:5000/my-stacks/us-central1/api/signup
 
 # login
 #curl -X POST -H "Content-Type:application/json" -d '{"email":"cam@gmail.com","password":"helloworld"}' http://localhost:5000/my-stacks/us-central1/api/login
 
 # test auth
-#curl -H "Authorization:Bearer $TOKEN" http://localhost:5000/my-stacks/us-central1/api/
+# curl -H "Authorization:Bearer $TOKEN" http://localhost:5000/my-stacks/us-central1/api/
 
 # get user stacks
-#curl -H "Authorization:Bearer $TOKEN" \
-#  http://localhost:5000/my-stacks/us-central1/api/users
+# curl -H "Authorization:Bearer $TOKEN" \
+  # http://localhost:5000/my-stacks/us-central1/api/users
 
 
 
 # create stack
 # curl -X POST -H "Content-Type:application/json" -H "Authorization:Bearer $TOKEN" \
- # -d '{"name":"Workout", "isRoutine": false, "backgroundColor": "red", "durationGrace": 900}' http://localhost:5000/my-stacks/us-central1/api/stacks
+  # -d '{"name":"Inbox", "isRoutine": false, "backgroundColor": "red", "durationGrace": 900}' http://localhost:5000/my-stacks/us-central1/api/stacks
 
 # update stack
 # curl -X PATCH -H "Content-Type:application/json" -H "Authorization:Bearer $TOKEN" \
@@ -33,7 +35,25 @@ BLOCK=replace
 
 # create block
 # curl -X POST -H "Content-Type:application/json" -H "Authorization:Bearer $TOKEN" \
-  # -d '{"task":"block work 2", "description": "", "durationWork": 9000, "durationBreak": 500, "numBursts": 3, "stackId": "'"$STACK"'"}' http://localhost:5000/my-stacks/us-central1/api/blocks
+  # -d '{"task":"Paint a picture", "description": "Coding", "durationWork": 3600, "durationBreak": 500, "numBursts": 3, "stackId": "'"$STACK0"'"}' http://localhost:5000/my-stacks/us-central1/api/blocks
+# curl -X POST -H "Content-Type:application/json" -H "Authorization:Bearer $TOKEN" \
+  # -d '{"task":"Work on personal project", "description": "Coding", "durationWork": 3600, "durationBreak": 500, "numBursts": 3, "stackId": "'"$STACK0"'"}' http://localhost:5000/my-stacks/us-central1/api/blocks
+# curl -X POST -H "Content-Type:application/json" -H "Authorization:Bearer $TOKEN" \
+  # -d '{"task":"Read books", "description": "Coding", "durationWork": 3600, "durationBreak": 500, "numBursts": 3, "stackId": "'"$STACK0"'"}' http://localhost:5000/my-stacks/us-central1/api/blocks
+#
+# curl -X POST -H "Content-Type:application/json" -H "Authorization:Bearer $TOKEN" \
+  # -d '{"task":"CSE 11", "description": "Coding", "durationWork": 3600, "durationBreak": 500, "numBursts": 3, "stackId": "'"$STACK1"'"}' http://localhost:5000/my-stacks/us-central1/api/blocks
+# curl -X POST -H "Content-Type:application/json" -H "Authorization:Bearer $TOKEN" \
+  # -d '{"task":"CSE 112", "description": "Coding", "durationWork": 3600, "durationBreak": 500, "numBursts": 3, "stackId": "'"$STACK1"'"}' http://localhost:5000/my-stacks/us-central1/api/blocks
+# curl -X POST -H "Content-Type:application/json" -H "Authorization:Bearer $TOKEN" \
+  # -d '{"task":"CSE 150B", "description": "Coding", "durationWork": 3600, "durationBreak": 500, "numBursts": 3, "stackId": "'"$STACK1"'"}' http://localhost:5000/my-stacks/us-central1/api/blocks
+#
+# curl -X POST -H "Content-Type:application/json" -H "Authorization:Bearer $TOKEN" \
+  # -d '{"task":"Planks", "description": "Tough", "durationWork": 3600, "durationBreak": 500, "numBursts": 3, "stackId": "'"$STACK2"'"}' http://localhost:5000/my-stacks/us-central1/api/blocks
+# curl -X POST -H "Content-Type:application/json" -H "Authorization:Bearer $TOKEN" \
+  # -d '{"task":"Pushups", "description": "Coding", "durationWork": 3600, "durationBreak": 500, "numBursts": 3, "stackId": "'"$STACK2"'"}' http://localhost:5000/my-stacks/us-central1/api/blocks
+# curl -X POST -H "Content-Type:application/json" -H "Authorization:Bearer $TOKEN" \
+  # -d '{"task":"Bench presses", "description": "Coding", "durationWork": 3600, "durationBreak": 500, "numBursts": 3, "stackId": "'"$STACK2"'"}' http://localhost:5000/my-stacks/us-central1/api/blocks
 
 # delete stack
 # curl -X DELETE -H "Authorization:Bearer $TOKEN" \

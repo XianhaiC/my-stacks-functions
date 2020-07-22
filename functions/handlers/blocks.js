@@ -21,7 +21,7 @@ exports.blockCreate = async (req, res) => {
   // validate body data
   const { errors, valid } = validateBlockCreate(newBlock);
   if (!valid) {
-    console.error("[ERROR] Invalid body params");
+    console.error('[ERROR] Invalid body params');
     return res.status(400).json(errors);
   }
 
@@ -33,7 +33,7 @@ exports.blockCreate = async (req, res) => {
     // validate access
     const { error, valid } = validateDocumentAccess(stackDoc, req.user.uid);
     if (!valid) {
-      console.error("[ERROR]", error.message);
+      console.error('[ERROR]', error.message);
       return res.status(error.status).json(error.message);
     }
 
@@ -53,27 +53,27 @@ exports.blockCreate = async (req, res) => {
     return res.status(200).json({ block: newBlock, stack: stackData });
   }
   catch (err) {
-    console.error("[ERROR]", err);
+    console.error('[ERROR]', err);
     return res.status(500).json({ error: err.code });
   }
 }
 
 exports.blockUpdate = async (req, res) => {
   const update = {};
-  if ("task" in req.body)
+  if ('task' in req.body)
     update.task = req.body.task;
-  if ("description" in req.body)
+  if ('description' in req.body)
     update.description = req.body.description;
-  if ("durationWork" in req.body)
+  if ('durationWork' in req.body)
     update.durationWork = req.body.durationWork;
-  if ("durationBreak" in req.body)
+  if ('durationBreak' in req.body)
     update.durationBreak = req.body.durationBreak;
-  if ("numBursts" in req.body)
+  if ('numBursts' in req.body)
     update.numBursts = req.body.numBursts;
 
   const { errors, valid } = validateBlockUpdate(update);
   if (!valid) {
-    console.error("[ERROR] Invalid body params");
+    console.error('[ERROR] Invalid body params');
 
     return res.status(400).json(errors);
   }
@@ -87,7 +87,7 @@ exports.blockUpdate = async (req, res) => {
     // validate access
     const { error, valid } = validateDocumentAccess(blockDoc, req.user.uid);
     if (!valid) {
-      console.error("[ERROR]", error.message);
+      console.error('[ERROR]', error.message);
       return res.status(error.status).json(error.message);
     }
 
@@ -99,7 +99,7 @@ exports.blockUpdate = async (req, res) => {
     return res.status(200).json(blockData);
   }
   catch (err) {
-    console.error("[ERROR]", err);
+    console.error('[ERROR]', err);
     return res.status(500).json({ error: err.code });
   }
 }
@@ -113,7 +113,7 @@ exports.blockDelete = async (req, res) => {
     // validate access
     const { error, valid } = validateDocumentAccess(blockDoc, req.user.uid);
     if (!valid) {
-      console.error("[ERROR]", error.message);
+      console.error('[ERROR]', error.message);
       return res.status(error.status).json(error.message);
     }
 
@@ -131,7 +131,7 @@ exports.blockDelete = async (req, res) => {
     return res.status(200).json({ result: 'Deleted document' });
   }
   catch (err) {
-    console.error("[ERROR]", err);
+    console.error('[ERROR]', err);
     return res.status(500).json({ error: err.code });
   }
 }
