@@ -61,8 +61,38 @@ exports.stackBlocksDelete = async (req, res) => {
 
     // delete all blocks in a batch and clear the stack's order array
     const batchDelete = deleteBlocks(stackDoc);
-    console.log('DEL', batchDelete);
     batchDelete.update(stackRequest, { order: [] });
+    await batchDelete.commit();
+
+    return res.status(200).json({ result: 'Deleted blocks' });
+  }
+  catch (err) {
+    console.error('[ERROR]', err);
+    return res.status(500).json({ error: err.code });
+  }
+}
+
+exports.stackBlocksDeleteMultiple = async (req, res) => {
+  const stackRequest = db.doc(`/stacks/${req.params.stackId}`);
+  const blockIds = req.body;
+  var blocksData = { blocks: {} };
+
+  try {
+    const stackDoc = await stackRequest.get();
+
+    // validate access
+    const { error, valid } = validateDocumentAccess(stackDoc, req.user.uid);
+    if (!valid) {
+      console.error('[ERROR]', error.message);
+      return res.status(error.status).json(error.message);
+    }
+
+    // delete select blocks in a batch and clear those blocks from the stack's
+    // order array
+    const batchDelete = deleteBlocksMultiple(blockIds);
+    const orderNew =
+      stackDoc.data().order.filter(blockId => !blockIds.includes(blockId))
+    batchDelete.update(stackRequest, { order: orderNew });
     await batchDelete.commit();
 
     return res.status(200).json({ result: 'Deleted blocks' });
@@ -185,7 +215,19 @@ const deleteBlocks = (stackDoc) => {
   stackDoc.data().order.forEach((blockId) => {
     batchDelete.delete(db.doc(`/blocks/${blockId}`));
   });
-  console.log('IN DEL', batchDelete);
+
+  // return instead of committing since the caller may need
+  // to append more writes
+  return batchDelete;
+}
+
+const deleteBlocksMultiple = (blockIds) => {
+  const batchDelete = db.batch();
+
+  // delete each block
+  blockIds.forEach((blockId) => {
+    batchDelete.delete(db.doc(`/blocks/${blockId}`));
+  });
 
   // return instead of committing since the caller may need
   // to append more writes

@@ -1,6 +1,7 @@
 const functions = require('firebase-functions');
 const firebase = require('firebase');
 const app = require('express')();
+const cors = require('cors');
 
 const { db } = require('./util/admin');
 const auth = require('./util/auth');
@@ -15,6 +16,7 @@ const {
 const {
   stackBlocksGet,
   stackBlocksDelete,
+  stackBlocksDeleteMultiple,
   stackCreate,
   stackUpdate,
   stackDelete,
@@ -26,6 +28,9 @@ const {
   blockDelete,
 } = require('./handlers/blocks');
 
+// enable cors
+app.use(cors())
+
 // ----- user routes
 app.get('/users/', auth, userGet);
 app.patch('/users/', auth, userUpdate);
@@ -35,6 +40,7 @@ app.post('/login', userLogin);
 // ----- stack routes
 app.get('/stacks/:stackId/blocks', auth, stackBlocksGet);
 app.delete('/stacks/:stackId/blocks', auth, stackBlocksDelete);
+app.post('/stacks/:stackId/blocks', auth, stackBlocksDeleteMultiple);
 app.post('/stacks', auth, stackCreate);
 app.patch('/stacks/:stackId', auth, stackUpdate);
 app.delete('/stacks/:stackId', auth, stackDelete);

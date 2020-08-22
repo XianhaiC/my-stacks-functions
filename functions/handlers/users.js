@@ -14,6 +14,7 @@ const {
 const {
   DEFAULT_THEME,
   DEFAULT_INBOX_NAME,
+  DEFAULT_INBOX_BACKGROUND,
   DEFAULT_GRACE,
 } = require('../util/constants');
 
@@ -114,7 +115,7 @@ exports.userSignup = async (req, res) => {
       name: DEFAULT_INBOX_NAME,
       isRoutine: false,
       isInbox: true,
-      backgroundColor: 'default',
+      backgroundColor: DEFAULT_INBOX_BACKGROUND,
       durationGrace: DEFAULT_GRACE,
       order: [],
       userId: userId,

@@ -74,6 +74,7 @@ exports.blockUpdate = async (req, res) => {
   const { errors, valid } = validateBlockUpdate(update);
   if (!valid) {
     console.error('[ERROR] Invalid body params');
+    console.log(req.body);
 
     return res.status(400).json(errors);
   }
